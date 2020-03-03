@@ -1,19 +1,17 @@
 ﻿## Get all users MFA Phone number and stores them in a CSV file
 Connect-MsolService
 $users = Get-MsolUser -All | where {$_.isLicensed -eq $true}
-$upn = $users.userprincipalname
-$csv = "C:\mfa.csv"
+$csv = "C:\tmp\mfa.csv"
 
 try {
-    New-Item $csv -ItemType File -Value ("upn,MFA_Num" + [Environment]::NewLine)
+    New-Item $csv -ItemType File -Value ("Display,upn,Mobile_Number" + [Environment]::NewLine)
 }
 catch {
-    Add-Content $csv ("upn,MFA_Num")
+    Add-Content $csv ("Display Name,upn,Mobile_Number")
 }
 
-foreach ($user in $upn) {
-
-    $userdetails = Get-MsolUser -userprincipalname $user
-    $userMFANumber = $userdetails.StrongAuthenticationUserDetails.PhoneNumber
-    Add-Content $csv ($user + "," + $userMFANumber)
+foreach ($user in $users) {
+    $userDisplayName = $user.DisplayName
+    $userMFANumber = $user.StrongAuthenticationUserDetails.PhoneNumber
+    Add-Content $csv ($userDisplayName + "," + $user.userprincipalname + "," + $userMFANumber)
 }
